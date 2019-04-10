@@ -44,6 +44,10 @@ public class ProjectTaskService {
             projectTask.setStatus("TO_DO");
         }
 
-        return projectTaskRepository.save(projectTask);
+        return projectTaskRepository.save(projectTask);        
     }
+    
+    public Iterable<ProjectTask> findBacklogById(String backlog_id) {
+		return projectTaskRepository.findByProjectIdentiferOrderByPriority(backlog_id);
+	}
 }

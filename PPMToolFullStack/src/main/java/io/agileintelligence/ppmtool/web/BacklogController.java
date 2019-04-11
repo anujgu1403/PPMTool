@@ -16,28 +16,44 @@ import javax.validation.Valid;
 @CrossOrigin
 public class BacklogController {
 
-    @Autowired
-    private ProjectTaskService projectTaskService;
+	@Autowired
+	private ProjectTaskService projectTaskService;
 
-    @Autowired
-    private MapValidationErrorService mapValidationErrorService;
+	@Autowired
+	private MapValidationErrorService mapValidationErrorService;
 
+	@PostMapping("/{backlog_id}")
+	public ResponseEntity<?> addPTtoBacklog(@Valid @RequestBody ProjectTask projectTask, BindingResult result,
+			@PathVariable String backlog_id) {
 
-    @PostMapping("/{backlog_id}")
-    public ResponseEntity<?> addPTtoBacklog(@Valid @RequestBody ProjectTask projectTask,
-                                            BindingResult result, @PathVariable String backlog_id){
+		ResponseEntity<?> erroMap = mapValidationErrorService.MapValidationService(result);
+		if (erroMap != null)
+			return erroMap;
 
-        ResponseEntity<?> erroMap = mapValidationErrorService.MapValidationService(result);
-        if (erroMap != null) return erroMap;
+		ProjectTask projectTask1 = projectTaskService.addProjectTask(backlog_id, projectTask);
 
-        ProjectTask projectTask1 = projectTaskService.addProjectTask(backlog_id, projectTask);
+		return new ResponseEntity<ProjectTask>(projectTask1, HttpStatus.CREATED);
 
-        return new ResponseEntity<ProjectTask>(projectTask1, HttpStatus.CREATED);
+	}
 
-    }
+	@GetMapping("/{backlog_id}")
+	public Iterable<ProjectTask> getProjectBacklog(@PathVariable String backlog_id) {
+		return projectTaskService.findBacklogById(backlog_id);
+	}
 
-    @GetMapping("/{backlog_id}")
-    public Iterable<ProjectTask> getProjectBacklog(@PathVariable String backlog_id){
-    return projectTaskService.findBacklogById(backlog_id);
-    }
+	@GetMapping("/{backlog_id}/{pt_id}")
+	public ResponseEntity<ProjectTask> getProjectTask(@PathVariable String backlog_id, @PathVariable String pt_id) {
+		ProjectTask projectTask = projectTaskService.findProjectTaskBySequence(backlog_id, pt_id);
+		return new ResponseEntity<ProjectTask>(projectTask, HttpStatus.OK);
+	}
+	
+	@PostMapping("")
+	public ResponseEntity<?> updateProjectTask(@RequestBody ProjectTask projectTask, BindingResult result) {
+		ResponseEntity<?> erroMap = mapValidationErrorService.MapValidationService(result);
+		if (erroMap != null)
+			return erroMap;
+		
+		ProjectTask projectTaskResp = projectTaskService.updateProjectTaskBySequence(projectTask);
+		return new ResponseEntity<ProjectTask>(projectTaskResp, HttpStatus.OK);
+	}
 }
